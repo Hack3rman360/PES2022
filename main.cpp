@@ -3,29 +3,29 @@
 
 //init
 //IR-Sensorpins:
-DigitalIn IRsensorLinks(PA_3);
-DigitalIn IRsensorMidden(PA_2);
-DigitalIn IRsensorRechts(PA_10);
+DigitalIn IRsensorLinks(D0);
+//DigitalIn IRsensorMidden();
+DigitalIn IRsensorRechts(D1);
 //Motordriver:
-PwmOut MotorlinksSnelheid(PB_4);
-PwmOut MotorrechtsSnelheid(PB_10);
-DigitalOut MotorlinksVooruit(PB_3);
-DigitalOut MotorlinksAchteruit(PB_5);
-DigitalOut MotorrechtsVooruit(PA_8);
-DigitalOut MotorrechtsAchteruit(PB_1);
+PwmOut MotorlinksSnelheid(D5);
+PwmOut MotorrechtsSnelheid(D6);
+DigitalOut MotorlinksVooruit(D2);
+DigitalOut MotorlinksAchteruit(D3);
+DigitalOut MotorrechtsVooruit(D4);
+DigitalOut MotorrechtsAchteruit(D7);
 //us-SENSORPINS:
-DigitalOut USsensorlinksTrig(PA_9);
-DigitalIn USsensorlinksEcho(PC_7);
-DigitalOut USsensorMiddenBovenTrig(PB_6);
-DigitalIn USsensorMiddenBovenEcho(PA_7);
-DigitalOut USsensorMiddenOnderTrig(PB_6);
-DigitalIn USsensorMiddenOnderEcho(PA_6);
-DigitalOut USsensorRechtsTrig(PA_5);
-DigitalIn USsensorRechtsEcho(PB_9);
+DigitalOut USsensorlinksTrig(D8);
+DigitalIn USsensorlinksEcho(D9);
+DigitalOut USsensorMiddenBovenTrig(D10);
+DigitalIn USsensorMiddenBovenEcho(D11);
+DigitalOut USsensorMiddenOnderTrig(D12);
+DigitalIn USsensorMiddenOnderEcho(D13);
+DigitalOut USsensorRechtsTrig(D14);
+DigitalIn USsensorRechtsEcho(D15);
 
 //startknop:
 
-AnalogIn startknop(PC_0);
+AnalogIn startknop(A0);
 
 
 
