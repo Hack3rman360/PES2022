@@ -1,21 +1,22 @@
 #include "mbed.h"
 #include "hcsr04.h"
 #include "motordriver.h"
+#include "ctime"
+#include <cstdio>
+
 
 
 
 //init
 //IR-Sensorpins:
-DigitalIn IRsensorLinks(D0);
+DigitalIn IRsensorLinks(PB_1); // geel
 //DigitalIn IRsensorMidden();
-DigitalIn IRsensorRechts(D1);
+DigitalIn IRsensorRechts(PB_15); // geel
 //Motordriver:
-PwmOut MotorlinksSnelheid(D5);
-PwmOut MotorrechtsSnelheid(D6);
-DigitalOut MotorlinksVooruit(D2);
-DigitalOut MotorlinksAchteruit(D3);
-DigitalOut MotorrechtsVooruit(D4);
-DigitalOut MotorrechtsAchteruit(D7);
+
+Motor L(D5, D2, D3, 0); // pwm(paars), fwd(groen), rev(blauw)
+Motor R(D6, D4, D7, 0); // pwm(paars), fwd(greon), rev(blauw)
+
 //us-SENSORPINS:
 HCSR04 USsensorLinks(D8, D9);
 HCSR04 USsensorMiddenBoven(D10, D11);
@@ -27,13 +28,9 @@ HCSR04 USsensorRechts(D14, D15);
 AnalogIn startknop(A0);
 
 bool setup(){
- if (startknop == true) {
- ThisThread::sleep_for(5s);
- return true;
- }    
- else {
- return false;
- }
+ 
+ startknop.read();
+ return startknop;
 }
 
 bool tiencmveraf() {
@@ -50,14 +47,9 @@ bool tiencmveraf() {
         distanceRechts = USsensorRechts.distance();
         
         
-        if (distanceLinks < 10 || distanceMiddenBoven < 10 || distanceMiddenOnder < 10 || distanceRechts < 10) {
-            return true;
-        }
-        else{
-            return false;
-        }
+        return (distanceLinks < 10 || distanceMiddenBoven < 10 || distanceMiddenOnder < 10 || distanceRechts < 10) ;
 
-        ThisThread::sleep_for(1ms);
+        ThisThread::sleep_for(100ms);
     }
 }
 
@@ -72,28 +64,77 @@ bool vijfcmveraf() {
         distanceLinks = USsensorLinks.distance();
         distanceMiddenBoven = USsensorMiddenBoven.distance();
         distanceMiddenOnder = USsensorMiddenOnder.distance();
-        distanceRechts = USsensorRechts.distance();
+        distanceRechts = USsensorRechts.distance();        
         
-        
-        if (distanceLinks < 5 || distanceMiddenBoven < 5 || distanceMiddenOnder < 5 || distanceRechts < 5) {
-            return true;
-        }
-        else{
-            return false;
-        }
+        return (distanceLinks < 5 || distanceMiddenBoven < 5 || distanceMiddenOnder < 5 || distanceRechts < 5);
 
         ThisThread::sleep_for(100ms);
     }
 }
 
+bool vervalDetectie(){
+    return (IRsensorLinks || IRsensorRechts);
+}
+
 
 int main(){
     
-    if (tiencmveraf() == true) {
+    printf("main gestart:%d\n\r", 0);
+
+    while (setup() == true) {
         
         
+        int randNum = rand() % 5+1;
+        ThisThread::sleep_for(4s);
+
+        printf("sleep for gelukt: %d\n\r", randNum);
+
+        L.speed (1.0);
+        R.speed (1.0);
+        printf("tot hiero\n");
+
+        while (tiencmveraf() == true) {
         
+            L.speed (0.5);
+            R.speed (0.5);
+
+            printf("tot daaro");
+                           
+            if (vijfcmveraf() == true || vervalDetectie() == true){
+                printf("ietsje verder");
+                L.speed(0);
+                R.speed(0);
+                ThisThread::sleep_for(200ms);
+                L.speed(-1);
+                R.speed(-1);
+                ThisThread::sleep_for(5s);
+                
+                for (int i = 0; (i = randNum); i++){
+                    L.speed(0.2);
+                    R.speed(-0.2);
+                    ThisThread::sleep_for(1s);
+
+                }
+            }
+
+            if (vervalDetectie() == true){
+                
+                ThisThread::sleep_for(200ms);
+                L.speed(-1);
+                R.speed(-1);
+                ThisThread::sleep_for(5s);
+                
+                for (int i = 0; (i = randNum); i++){
+                    L.speed(0.2);
+                    R.speed(-0.2);
+                    ThisThread::sleep_for(1s);
+                }
+            }
+
+        
+        }
     }
+    return 0;
 }    
 
 
