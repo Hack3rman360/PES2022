@@ -5,17 +5,24 @@
 #include <cstdio>
 
 
+enum State{
+    INIT,
+    START, 
+    TIENCMDIS,
+    //VIJFCMDIS,
+    VERVAL,
 
+};
 
 //init
 //IR-Sensorpins:
-DigitalIn IRsensorLinks(PB_1); // geel
+DigitalIn IRsensorLinks(PC_8); // geel
 //DigitalIn IRsensorMidden();
 DigitalIn IRsensorRechts(PB_15); // geel
 //Motordriver:
 
-Motor L(D5, D2, D3, 0); // pwm(paars), fwd(groen), rev(blauw)
-Motor R(D6, D4, D7, 0); // pwm(paars), fwd(greon), rev(blauw)
+Motor L(D5, D2, D3, 1); // pwm(paars), fwd(groen), rev(blauw)
+Motor R(D6, D4, D7, 1); // pwm(paars), fwd(greon), rev(blauw)
 
 //us-SENSORPINS:
 HCSR04 USsensorLinks(D8, D9); //groen, geel
@@ -27,123 +34,113 @@ HCSR04 USsensorRechts(D14, D15);
 
 DigitalIn startknop(PC_4);
 
-bool setup(){
- 
- startknop.read();
- return startknop;
+
+
+
+//state
+State stofzuigen;
+
+bool caseEntry = true;
+bool draaipunt = false;
+
+
+
+
+void vooruit(){
+    L.speed(0.997);
+    R.speed(1);
 }
 
-bool tiencmveraf() {
-    printf("tiencmveraf gecallt\n");
-        int distanceLinks;
-        int distanceMiddenBoven;
-        int distanceMiddenOnder;
-        int distanceRechts;
+void vooruithalf(){
+    L.speed(0.5);
+    R.speed(0.5);
+}
+void achteruit(){
+    L.speed(-0.7);
+    R.speed(-0.7);
+}
 
-        distanceLinks = USsensorLinks.distance();
-        distanceMiddenBoven = USsensorMiddenBoven.distance();
-        distanceMiddenOnder = USsensorMiddenOnder.distance();
-        distanceRechts = USsensorRechts.distance();
-        
-        printf("distance is: %d\n\r", distanceLinks);
+void stop(){
+    L.speed(0);
+    R.speed(0);
+}
 
-        return (distanceLinks < 10 || distanceMiddenBoven < 10 || distanceMiddenOnder < 10 || distanceRechts < 10) ;
+void stopvoorverval(){
+    L.speed(-0.5);
+    R.speed(-0.5);
+}
+
+void draaien(){
+    L.speed(0.7);
+    R.speed(-0.7);
+}
+int main()
+{
+	
     
-}
 
-bool vijfcmveraf() {
-    
-    int distanceLinks;
-    int distanceMiddenBoven;
-    int distanceMiddenOnder;
-    int distanceRechts;
+   
 
-    distanceLinks = USsensorLinks.distance();
-    distanceMiddenBoven = USsensorMiddenBoven.distance();
-    distanceMiddenOnder = USsensorMiddenOnder.distance();
-    distanceRechts = USsensorRechts.distance();        
-        
-    return (distanceLinks < 5 || distanceMiddenBoven < 5 || distanceMiddenOnder < 5 || distanceRechts < 5);
+    while(true){      
+            stop();
+            while (startknop){
+                int distanceLinks = USsensorLinks.distance();
+                int distanceMiddenBoven = USsensorMiddenBoven.distance();
+                int distanceMiddenOnder = USsensorMiddenOnder.distance();
+                int distanceRechts = USsensorRechts.distance();
 
-  ThisThread::sleep_for(100ms);
-    
-}
-
-bool vervalDetectie(){
-
-    IRsensorLinks.read();
-    IRsensorRechts.read();
-    return (IRsensorLinks || IRsensorRechts);
-}
-
-
-int main(){
-        printf("main gestart:%d\n\r", 0);
-        startknop.read();
-        while (startknop == true) {
-            printf("setup is true\n");
-        
-            int randNum = rand() % 5+1;
-            ThisThread::sleep_for(4s);
-
-            printf("sleep for gelukt: %d\n\r", randNum);
-
-            L.speed (1.0);
-            R.speed (1.0);
-            printf("tot hiero\n");
-
-            if (tiencmveraf() == true) {
-        
-                L.speed (0.5);
-                R.speed (0.5);
-
-                //printf("tot daaro\n");
-                           
-                if (vijfcmveraf() == true || vervalDetectie() == true){
-                //printf("ietsje verder\n");
-                    L.speed(0);
-                    R.speed(0);
-                    ThisThread::sleep_for(500ms);
-                    L.speed(-0.7);
-                    R.speed(-0.7);
-                    ThisThread::sleep_for(5s);
-                    L.speed(0);
-                    R.speed(0);
-                    ThisThread::sleep_for(500ms);
+                //printf("distancelinks is: %d\n\r", distanceLinks);
+                //printf("distancerechts is: %d\n\r", distanceRechts);
+                //printf("distanceboven is: %d\n\r", distanceMiddenBoven);
+                //printf("distanceonder is: %d\n\r", distanceMiddenOnder);
+                stofzuigen = State::TIENCMDIS;
+                int randNum = rand() % 8+1;
                 
-                    for (int i = 0; (i <= randNum); i++){
-                        L.speed(0.7);
-                        R.speed(-0.7);
-                        printf(" loop gedaan: %d\n", i);
-                        ThisThread::sleep_for(1s);
+                switch (stofzuigen) {
+                case State::TIENCMDIS : if(distanceLinks  < 25 ||distanceMiddenBoven < 15 ||distanceMiddenOnder < 15 || distanceRechts < 25){
+                    
+                    int distanceLinks = USsensorLinks.distance();
+                    int distanceMiddenBoven = USsensorMiddenBoven.distance();
+                    int distanceMiddenOnder = USsensorMiddenOnder.distance();
+                    int distanceRechts = USsensorRechts.distance();
+                    
 
+                    if (distanceLinks < 15 || distanceMiddenBoven < 8 ||distanceMiddenOnder < 8 || distanceRechts < 15 ||IRsensorRechts || IRsensorRechts){
+                        stopvoorverval();
+                        ThisThread::sleep_for(500ms);
+                        achteruit();
+                        ThisThread::sleep_for(750ms);
+                        stop();
+                        ThisThread::sleep_for(500ms);
+                        draaien();
+                        ThisThread::sleep_for(randNum*250ms);
+                        stop();
                     }
-                    L.speed(0);
-                    R.speed(0);
+                    else {
+                    vooruithalf();
+                    }
+                    stofzuigen = State::VERVAL;
+                    break;
                 }
-            }
-            if (vervalDetectie() == true){
-                L.speed(0);
-                R.speed(0);
-                ThisThread::sleep_for(500ms);
-                L.speed(-0.7);
-                R.speed(-0.7);
-                ThisThread::sleep_for(5s);
 
-                L.speed(0);
-                R.speed(0);
+                case State::VERVAL : if (IRsensorLinks || IRsensorRechts){
+                        stopvoorverval();
+                        ThisThread::sleep_for(500ms);
+                        achteruit();
+                        ThisThread::sleep_for(750ms);
+                        stop();
+                        ThisThread::sleep_for(500ms);
+                        draaien();
+                        ThisThread::sleep_for(randNum*250ms);
+                        stop();
+                    break;
+                }
+
+                default:
                 
-                for (int i = 0; (i <= randNum); i++){
-                    L.speed(0.7);
-                    R.speed(-0.7);
-                    printf(" loop gedaan: %d\n", i);
-                    ThisThread::sleep_for(1s);
-                }
-
-        
-            }
+                vooruit();  
+            ThisThread::sleep_for(5ms);
         }
-
-        //ThisThread::sleep_for(50ms);
-
-    }    
+    }
+    }
+}
